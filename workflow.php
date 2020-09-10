@@ -63,7 +63,7 @@ class Roam {
 			$out['arg'] = "https://roamresearch.com/#/app/{$this->config->graph}/page/{$item->uid}";
 		}
 		if( isset( $item->uid ) ) {
-			$out['autocomplete'] = $item->uid;
+			$out['autocomplete'] = "(({$item->uid}))";
 		} else if ( isset( $item->title ) ) {
 			$out['autocomplete'] =  "[[$item->title]]";
 		}
@@ -88,14 +88,14 @@ class Roam {
 			}
 		} else if( isset( $data->title ) && preg_match( "#\[\[([^\]]+)\]\]#i", $this->argv[1], $match ) && (strtolower($data->title) === strtolower($match[1]) ) ) {
 			$this->output( $data );
-		} else if( isset( $data->uid ) && $this->argv[1] === $data->uid  ) {
+		} else if( isset( $data->uid ) && strtolower( trim( $this->argv[1] ) ) === '((' . strtolower( $data->uid ) . '))'  ) {
 			if( $parent ) {
 				$this->output( $parent, $title, "◀️ " );
 			}
 			$this->output( $data, $title, "\t" );
 		} else if ( isset( $parent->title ) && strtolower( $this->argv[1] ) === strtolower( "[[$parent->title]]" )  ) {
 			$this->output( $data, $title, "\t" );
-		} else if ( isset( $parent->uid ) && $this->argv[1] === $parent->uid  ) {
+		} else if ( isset( $parent->uid ) && strtolower( trim( $this->argv[1] ) ) === '((' . strtolower( $parent->uid ) . '))'   ) {
 			$this->output( $data, $title, "\t" );
 		} else if ( substr( $this->argv[1], 0, 2 ) === '[[' ) {
 			if( isset( $data->title ) && stristr( $data->title, substr( $this->argv[1], 2 ) ) ) {
