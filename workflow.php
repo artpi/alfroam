@@ -5,13 +5,13 @@ class Roam {
 	static $config_file = "./.config.json";
 	public $output = [];
 	public $config = null;
-	public $argv;
-	function search( $argv ) {
-		$this->argv = $argv;
-		if(  isset($argv[1]) && substr( $argv[1], 0, 1 ) === '/' && substr( $argv[1], -5, 5 ) === '.json' && file_exists( $argv[1] ) && preg_match( '#/([^/.]+)\.json#i', $argv[1], $match ) ) {
+	public $search;
+	function search( $search ) {
+		$this->search = $search;
+		if(  isset( $this->search ) && substr( $this->search, 0, 1 ) === '/' && substr( $this->search, -5, 5 ) === '.json' && file_exists( $this->search ) && preg_match( '#/([^/.]+)\.json#i', $this->search, $match ) ) {
 			$this->config = (object) [
 				'graph' => $match[1],
-				'location' => $argv[1],
+				'location' => $this->search,
 			];
 			file_put_contents( self::$config_file, json_encode( $this->config ) );
 			$this->output[] = array(
@@ -44,6 +44,7 @@ class Roam {
 				'arg' => 'https://piszek.com',
 			);
 		}
+		//print_r($this->output);
 		echo json_encode( array( 'items' => $this->output ) );
 	}
 
@@ -68,7 +69,7 @@ class Roam {
 			$out['autocomplete'] =  "[[$item->title]]";
 		}
 		if( isset( $item->string ) ) {
-			$out['title'] .= trim( substr( $item->string, 0, 100 ) );
+			$out['title'] .= $item->string;
 			$out['text'] = array(
 				'largetype' => $item->string,
 				'copy' => $item->string,
@@ -82,27 +83,30 @@ class Roam {
 
 	function explore( $data, $title, $parent ) {
 		// We add a block
-		if( ! isset( $this->argv[1] ) ) {
+		if( ! $this->search ) {
 			if( isset( $data->title ) ) {
 				$this->output( $data, $title );
 			}
-		} else if( isset( $data->title ) && preg_match( "#\[\[([^\]]+)\]\]#i", $this->argv[1], $match ) && (strtolower($data->title) === strtolower($match[1]) ) ) {
+		} else if( isset( $data->title ) && preg_match( "#\[\[([^\]]+)\]\]#i", $this->search, $match ) && (strtolower($data->title) === strtolower($match[1]) ) ) {
 			$this->output( $data );
-		} else if( isset( $data->uid ) && strtolower( trim( $this->argv[1] ) ) === '((' . strtolower( $data->uid ) . '))'  ) {
+		} else if( isset( $data->uid ) && strtolower( trim( $this->search ) ) === '((' . strtolower( $data->uid ) . '))'  ) {
+			// print_r( $data );
 			if( $parent ) {
 				$this->output( $parent, $title, "◀️ " );
 			}
 			$this->output( $data, $title, "\t" );
-		} else if ( isset( $parent->title ) && strtolower( $this->argv[1] ) === strtolower( "[[$parent->title]]" )  ) {
+		} else if ( isset( $parent->title ) && strtolower( $this->search ) === strtolower( "[[$parent->title]]" )  ) {
 			$this->output( $data, $title, "\t" );
-		} else if ( isset( $parent->uid ) && strtolower( trim( $this->argv[1] ) ) === '((' . strtolower( $parent->uid ) . '))'   ) {
+		} else if ( isset( $parent->uid ) && strtolower( trim( $this->search ) ) === '((' . strtolower( $parent->uid ) . '))'   ) {
 			$this->output( $data, $title, "\t" );
-		} else if ( substr( $this->argv[1], 0, 2 ) === '[[' ) {
-			if( isset( $data->title ) && stristr( $data->title, substr( $this->argv[1], 2 ) ) ) {
+		} else if ( substr( $this->search, 0, 2 ) === '[[' ) {
+			if( isset( $data->title ) && stristr( $data->title, substr( $this->search, 2 ) ) ) {
 				$this->output( $data, $title );
 			}
 			return;
-		} else if ( isset( $data->string ) && stristr( $data->string, $this->argv[1] ) ) {
+		}  else if( isset( $data->title ) && stristr( $data->title, $this->search ) ) {
+			$this->output( $data, $title );
+		} else if ( isset( $data->string ) && stristr( $data->string, $this->search ) ) {
 			$this->output( $data, $title );
 		}
 		if( isset( $data->children ) ) {
@@ -113,8 +117,6 @@ class Roam {
 
 	}
 }
-
-
 
 
 

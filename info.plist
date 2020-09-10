@@ -62,7 +62,7 @@
 				<key>script</key>
 				<string>&lt;?php
 require_once  './workflow.php';
-(new Roam())-&gt;search( $argv );
+(new Roam())-&gt;search( isset( $argv[1] ) ? $argv[1] : '' );
 
 ?&gt;</string>
 				<key>scriptargtype</key>
