@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.piszek.roam.alfred</string>
+	<key>category</key>
+	<string>Productivity</string>
+	<key>connections</key>
+	<dict>
+		<key>2AACD126-3A80-4A72-8E46-36F3A389D851</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>798C6EF5-C578-466A-B323-3124FCB3EE82</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Artur Pizek</string>
+	<key>description</key>
+	<string></string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Roam</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>100</integer>
+				<key>keyword</key>
+				<string>roam</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Searching searching searching</string>
+				<key>script</key>
+				<string>&lt;?php
+$config_file = "./.config.json";
+$output = [];
+
+if(  isset($argv[1]) &amp;&amp; substr( $argv[1], 0, 1 ) === '/' &amp;&amp; substr( $argv[1], -5, 5 ) === '.json' &amp;&amp; file_exists( $argv[1] ) &amp;&amp; preg_match( '#/([^/.]+)\.json#i', $argv[1], $match ) ) {
+	$config = (object) [
+		'graph' =&gt; $match[1],
+		'location' =&gt; $argv[1],
+	];
+	file_put_contents( $config_file, json_encode( $config ) );
+	$output[] = array(
+		'title' =&gt; "Your graph {$config-&gt;graph} updated",
+		'subtitle' =&gt; $config-&gt;location,
+		'arg' =&gt; 'https://piszek.com',
+	);
+
+
+}
+
+
+if( file_exists( $config_file ) ) {
+	$config = json_decode( file_get_contents( $config_file ) );
+	if( file_exists( $config-&gt;location ) ) {
+		$json = file_get_contents( $config-&gt;location );
+		$data = json_decode( $json );
+	}
+}
+$db = 'artpi';
+
+
+
+if( $data ) {
+	foreach ( $data  as $page ) {
+		explore( $page, $page-&gt;title, null );
+	}
+} else {
+	$output[] = array(
+		'title' =&gt; 'Cannot read your database. ',
+		'subtitle' =&gt; 'Point me to your graph .json file. ex: "roam /Users/me/Desktop/me.json"',
+		'arg' =&gt; 'https://piszek.com',
+	);
+}
+echo json_encode( array( 'items' =&gt; $output ) );
+
+
+
+
+function output( $item, $pagetitle = '', $append = '' ) {
+	global $output, $config;
+	$out = array(
+		'title' =&gt; $append,
+		'autocomplete' =&gt; '',
+	);
+
+	if( $pagetitle ) {
+		$out['subtitle'] = "[[$pagetitle]]";
+	}
+
+	if( isset( $item-&gt;string ) &amp;&amp; substr( $item-&gt;string, 0, 4 ) === 'http' ) {
+		$out['arg'] = trim( $item-&gt;string );
+	} else if( isset( $item-&gt;uid ) ) {
+		$out['arg'] = "https://roamresearch.com/#/app/{$config-&gt;graph}/page/{$item-&gt;uid}";
+	}
+	if( isset( $item-&gt;uid ) ) {
+		$out['autocomplete'] = $item-&gt;uid;
+	} else if ( isset( $item-&gt;title ) ) {
+		$out['autocomplete'] =  "[[$item-&gt;title]]";
+	}
+	if( isset( $item-&gt;string ) ) {
+		$out['title'] .= trim( substr( $item-&gt;string, 0, 100 ) );
+		$out['text'] = array(
+			'largetype' =&gt; $item-&gt;string,
+			'copy' =&gt; $item-&gt;string,
+		);
+	} else if ( isset( $item-&gt;title ) ) {
+		$out['title'] .= "[[$item-&gt;title]]";
+	}
+
+	$output[] = $out;
+}
+function explore( $data, $title, $parent ) {
+	global $db, $find, $argv;
+	// We add a block
+	if( ! isset( $argv[1] ) ) {
+		if( isset( $data-&gt;title ) ) {
+			output( $data, $title );
+		}
+	} else if( isset( $data-&gt;title ) &amp;&amp; preg_match( "#\[\[([^\]]+)\]\]#i", $argv[1], $match ) &amp;&amp; (strtolower($data-&gt;title) === strtolower($match[1]) ) ) {
+		output( $data );
+	} else if( isset( $data-&gt;uid ) &amp;&amp; $argv[1] === $data-&gt;uid  ) {
+		if( $parent ) {
+			output( $parent, $title, "◀️ " );
+		}
+		output( $data, $title, "\t" );
+	} else if ( isset( $parent-&gt;title ) &amp;&amp; strtolower( $argv[1] ) === strtolower( "[[$parent-&gt;title]]" )  ) {
+		output( $data, $title, "\t" );
+	} else if ( isset( $parent-&gt;uid ) &amp;&amp; $argv[1] === $parent-&gt;uid  ) {
+		output( $data, $title, "\t" );
+	} else if ( substr( $argv[1], 0, 2 ) === '[[' ) {
+		if( isset( $data-&gt;title ) &amp;&amp; stristr( $data-&gt;title, substr( $argv[1], 2 ) ) ) {
+			output( $data, $title );
+		}
+		return;
+	} else if ( isset( $data-&gt;string ) &amp;&amp; stristr( $data-&gt;string, $argv[1] ) ) {
+		output( $data, $title );
+	}
+	if( isset( $data-&gt;children ) ) {
+		foreach ( $data-&gt;children  as $block ) {
+			explore( $block, $title, $data );
+		}
+	}
+
+}
+
+?&gt;</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Start your search query</string>
+				<key>title</key>
+				<string>Search Roam blocks</string>
+				<key>type</key>
+				<integer>1</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>2AACD126-3A80-4A72-8E46-36F3A389D851</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
+				<key>utf8</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>798C6EF5-C578-466A-B323-3124FCB3EE82</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string></string>
+	<key>uidata</key>
+	<dict>
+		<key>2AACD126-3A80-4A72-8E46-36F3A389D851</key>
+		<dict>
+			<key>xpos</key>
+			<integer>495</integer>
+			<key>ypos</key>
+			<integer>130</integer>
+		</dict>
+		<key>798C6EF5-C578-466A-B323-3124FCB3EE82</key>
+		<dict>
+			<key>xpos</key>
+			<integer>760</integer>
+			<key>ypos</key>
+			<integer>130</integer>
+		</dict>
+	</dict>
+	<key>webaddress</key>
+	<string>https://deliber.at</string>
+</dict>
+</plist>
