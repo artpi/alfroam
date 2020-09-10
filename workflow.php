@@ -44,7 +44,6 @@ class Roam {
 				'arg' => 'https://piszek.com',
 			);
 		}
-		//print_r($this->output);
 		echo json_encode( array( 'items' => $this->output ) );
 	}
 
@@ -58,7 +57,9 @@ class Roam {
 			$out['subtitle'] = "[[$pagetitle]]";
 		}
 
-		if( isset( $item->string ) && substr( $item->string, 0, 4 ) === 'http' ) {
+		if( isset( $item->string ) && preg_match( '#::\s*(http\S+)#is', $item->string, $match  ) ) {
+			$out['arg'] = $match[1];
+		} else if( isset( $item->string ) && substr( $item->string, 0, 4 ) === 'http' ) {
 			$out['arg'] = trim( $item->string );
 		} else if( isset( $item->uid ) ) {
 			$out['arg'] = "https://roamresearch.com/#/app/{$this->config->graph}/page/{$item->uid}";
@@ -83,14 +84,22 @@ class Roam {
 
 	function explore( $data, $title, $parent ) {
 		// We add a block
+
 		if( ! $this->search ) {
 			if( isset( $data->title ) ) {
 				$this->output( $data, $title );
 			}
-		} else if( isset( $data->title ) && preg_match( "#\[\[([^\]]+)\]\]#i", $this->search, $match ) && (strtolower($data->title) === strtolower($match[1]) ) ) {
-			$this->output( $data );
+		} else if( preg_match( "#^\[\[([^\]]+)\]\]#i", $this->search, $match )  ) {
+			if ( isset( $data->title )  && ( strtolower($data->title) === strtolower($match[1] ) ) ) {
+				$this->output( $data, $title );
+			}
+			if ( isset( $parent->title ) && strtolower( $this->search ) === strtolower( "[[$parent->title]]" )  ) {
+				$this->output( $data, $title, "\t" );
+			} else
+			if ( strtolower( $title ) === strtolower( $match[1] ) && isset( $data->string ) && stristr( $data->string , trim( str_replace( "[[{$match[1]}]]", '', $this->search ) ) ) ) {
+				$this->output( $data, $title );
+			}
 		} else if( isset( $data->uid ) && strtolower( trim( $this->search ) ) === '((' . strtolower( $data->uid ) . '))'  ) {
-			// print_r( $data );
 			if( $parent ) {
 				$this->output( $parent, $title, "◀️ " );
 			}
