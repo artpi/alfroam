@@ -5,8 +5,10 @@ class Roam {
 	static $config_file = "./.config.json";
 	public $output = [];
 	public $config = null;
+	public $modifier = '';
 	public $search;
-	function search( $search ) {
+	function search( $search, $modifier = '' ) {
+		$this->modifier = $modifier;
 		$this->search = $search;
 		if(  isset( $this->search ) && substr( $this->search, 0, 1 ) === '/' && substr( $this->search, -5, 5 ) === '.json' && file_exists( $this->search ) && preg_match( '#/([^/.]+)\.json#i', $this->search, $match ) ) {
 			$this->config = (object) [
@@ -75,6 +77,13 @@ class Roam {
 				'largetype' => $item->string,
 				'copy' => $item->string,
 			);
+			$out['mods'] = array(
+			    "cmd" => [
+			        "valid" => true,
+			        "arg" => $item->string,
+			        "Copy and Paste: " =>  $item->string,
+			    ],
+			);
 		} else if ( isset( $item->title ) ) {
 			$out['title'] .= "[[$item->title]]";
 		}
@@ -108,8 +117,8 @@ class Roam {
 			$this->output( $data, $title, "\t" );
 		} else if ( isset( $parent->uid ) && strtolower( trim( $this->search ) ) === '((' . strtolower( $parent->uid ) . '))'   ) {
 			$this->output( $data, $title, "\t" );
-		} else if ( substr( $this->search, 0, 2 ) === '[[' ) {
-			if( isset( $data->title ) && stristr( $data->title, substr( $this->search, 2 ) ) ) {
+		} else if ( substr( $this->search, 0, 2 ) === '[[' || $this->modifier === 'pages' ) {
+			if( isset( $data->title ) && stristr( $data->title, trim(str_replace( '[[', '', $this->search ) ) ) ) {
 				$this->output( $data, $title );
 			}
 			return;
