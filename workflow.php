@@ -2,12 +2,13 @@
 
 
 class Roam {
-	static $config_file = "./.config.json";
+	public $config_file;
 	public $output = [];
 	public $config = null;
 	public $modifier = '';
 	public $search;
 	function search( $search, $modifier = '' ) {
+		$this->config_file = "{$_SERVER['HOME']}/.config/alfroam.json";
 		$this->modifier = $modifier;
 		$this->search = $search;
 		if(  isset( $this->search ) && substr( $this->search, 0, 1 ) === '/' && substr( $this->search, -5, 5 ) === '.json' && file_exists( $this->search ) && preg_match( '#/([^/.]+)\.json#i', $this->search, $match ) ) {
@@ -15,7 +16,7 @@ class Roam {
 				'graph' => $match[1],
 				'location' => $this->search,
 			];
-			file_put_contents( self::$config_file, json_encode( $this->config ) );
+			file_put_contents( $this->config_file, json_encode( $this->config ) );
 			$this->output[] = array(
 				'title' => "Your graph {$this->config->graph} updated",
 				'subtitle' => $this->config->location,
@@ -26,8 +27,8 @@ class Roam {
 		}
 
 
-		if( file_exists( self::$config_file ) ) {
-			$this->config = json_decode( file_get_contents( self::$config_file ) );
+		if( file_exists( $this->config_file ) ) {
+			$this->config = json_decode( file_get_contents( $this->config_file ) );
 			if( file_exists( $this->config->location ) ) {
 				$json = file_get_contents( $this->config->location );
 				$data = json_decode( $json );
