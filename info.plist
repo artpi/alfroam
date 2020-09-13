@@ -178,7 +178,7 @@ require_once  './workflow.php';
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string>https://deliber.at/roam-alfred/</string>
 	<key>uidata</key>
 	<dict>
 		<key>2AACD126-3A80-4A72-8E46-36F3A389D851</key>
@@ -210,6 +210,10 @@ require_once  './workflow.php';
 			<integer>95</integer>
 		</dict>
 	</dict>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
 	<key>webaddress</key>
 	<string>https://deliber.at/roam-alfred/</string>
 </dict>
