@@ -12,7 +12,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>798C6EF5-C578-466A-B323-3124FCB3EE82</string>
+				<string>D8176F49-8CF3-4813-9CF6-6B488F0A5166</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -31,6 +31,21 @@
 				<false/>
 			</dict>
 		</array>
+		<key>D8176F49-8CF3-4813-9CF6-6B488F0A5166</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>798C6EF5-C578-466A-B323-3124FCB3EE82</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>sourceoutputuid</key>
+				<string>F62DFFF0-FDF2-4344-8954-0AD92EF27031</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>@artpi</string>
@@ -42,6 +57,25 @@
 	<string>Roam</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
+				<key>utf8</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>798C6EF5-C578-466A-B323-3124FCB3EE82</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -98,19 +132,30 @@ require_once  './workflow.php';
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>browser</key>
-				<string></string>
-				<key>spaces</key>
-				<string></string>
-				<key>url</key>
-				<string>{query}</string>
-				<key>utf8</key>
-				<false/>
+				<key>conditions</key>
+				<array>
+					<dict>
+						<key>inputstring</key>
+						<string></string>
+						<key>matchcasesensitive</key>
+						<false/>
+						<key>matchmode</key>
+						<integer>4</integer>
+						<key>matchstring</key>
+						<string>^http</string>
+						<key>outputlabel</key>
+						<string></string>
+						<key>uid</key>
+						<string>F62DFFF0-FDF2-4344-8954-0AD92EF27031</string>
+					</dict>
+				</array>
+				<key>elselabel</key>
+				<string>else</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.openurl</string>
+			<string>alfred.workflow.utility.conditional</string>
 			<key>uid</key>
-			<string>798C6EF5-C578-466A-B323-3124FCB3EE82</string>
+			<string>D8176F49-8CF3-4813-9CF6-6B488F0A5166</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -139,9 +184,9 @@ require_once  './workflow.php';
 		<key>2AACD126-3A80-4A72-8E46-36F3A389D851</key>
 		<dict>
 			<key>xpos</key>
-			<integer>225</integer>
+			<integer>250</integer>
 			<key>ypos</key>
-			<integer>95</integer>
+			<integer>75</integer>
 		</dict>
 		<key>3EF96351-A602-4540-B61A-51673AE92706</key>
 		<dict>
@@ -153,12 +198,19 @@ require_once  './workflow.php';
 		<key>798C6EF5-C578-466A-B323-3124FCB3EE82</key>
 		<dict>
 			<key>xpos</key>
-			<integer>820</integer>
+			<integer>805</integer>
+			<key>ypos</key>
+			<integer>60</integer>
+		</dict>
+		<key>D8176F49-8CF3-4813-9CF6-6B488F0A5166</key>
+		<dict>
+			<key>xpos</key>
+			<integer>595</integer>
 			<key>ypos</key>
 			<integer>95</integer>
 		</dict>
 	</dict>
 	<key>webaddress</key>
-	<string>https://deliber.at</string>
+	<string>https://deliber.at/roam-alfred/</string>
 </dict>
 </plist>

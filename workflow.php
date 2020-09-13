@@ -20,7 +20,7 @@ class Roam {
 			$this->output[] = array(
 				'title' => "Your graph {$this->config->graph} updated",
 				'subtitle' => $this->config->location,
-				'arg' => 'https://piszek.com',
+				'arg' => 'https://deliber.at/roam-alfred/',
 			);
 
 
@@ -44,7 +44,7 @@ class Roam {
 			$this->output[] = array(
 				'title' => 'Cannot read your database. ',
 				'subtitle' => 'Point me to your graph .json file. ex: "roam /Users/me/Desktop/me.json"',
-				'arg' => 'https://piszek.com',
+				'arg' => 'https://deliber.at/roam-alfred/',
 			);
 		}
 		echo json_encode( array( 'items' => $this->output ) );
