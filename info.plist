@@ -105,6 +105,7 @@
 				<string>Searching searching searching</string>
 				<key>script</key>
 				<string>&lt;?php
+error_reporting( E_WARNING );
 require_once  './workflow.php';
 (new Roam())-&gt;search( isset( $argv[1] ) ? $argv[1] : '' );
 

@@ -105,8 +105,13 @@ class Roam {
 			}
 			if ( isset( $parent->title ) && strtolower( $this->search ) === strtolower( "[[$parent->title]]" )  ) {
 				$this->output( $data, $title, "\t" );
-			} else
-			if ( strtolower( $title ) === strtolower( $match[1] ) && isset( $data->string ) && stristr( $data->string , trim( str_replace( "[[{$match[1]}]]", '', $this->search ) ) ) ) {
+			}
+			else if (
+				isset( $data->string ) &&
+				strtolower( $title ) === strtolower( $match[1] ) &&
+				strlen( trim( str_replace( "[[{$match[1]}]]", '', $this->search ) ) ) > 1 &&
+				stristr( $data->string , trim( str_replace( "[[{$match[1]}]]", '', $this->search ) ) )
+			) {
 				$this->output( $data, $title );
 			}
 		} else if( isset( $data->uid ) && strtolower( trim( $this->search ) ) === '((' . strtolower( $data->uid ) . '))'  ) {
@@ -119,7 +124,11 @@ class Roam {
 		} else if ( isset( $parent->uid ) && strtolower( trim( $this->search ) ) === '((' . strtolower( $parent->uid ) . '))'   ) {
 			$this->output( $data, $title, "\t" );
 		} else if ( substr( $this->search, 0, 2 ) === '[[' || $this->modifier === 'pages' ) {
-			if( isset( $data->title ) && stristr( $data->title, trim(str_replace( '[[', '', $this->search ) ) ) ) {
+			if(
+				isset( $data->title ) &&
+				strlen( trim(str_replace( '[[', '', $this->search ) ) ) > 1 &&
+				stristr( $data->title, trim(str_replace( '[[', '', $this->search ) ) )
+			) {
 				$this->output( $data, $title );
 			}
 			return;
