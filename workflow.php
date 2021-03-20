@@ -72,16 +72,15 @@ class Roam {
 				'subtitle' => $this->config['location'],
 				'arg' => 'https://deliber.at/roam-alfred/',
 			);
-		}
-
-		if ( ! isset( $this->config['location'] ) || ! $this->config['location'] || ! $this->load_backup() ) {
+		} else if ( empty( $this->config['location'] ) || ! $this->load_backup() ) {
 			$this->output[] = array(
 				'title' => 'Cannot read your database. ',
-				'subtitle' => 'Point me to your graph .json file. ex: "roam /Users/me/Desktop/me.json"',
+				'subtitle' => 'Point me to your graph .json file. ex: "roam /Users/me/Desktop/roam"',
 				'arg' => 'https://deliber.at/roam-alfred/',
 			);
+		} else {
+			$this->s( $search );
 		}
-		$this->s( $search );
 		echo json_encode( array( 'items' => $this->output ) );
 	}
 
