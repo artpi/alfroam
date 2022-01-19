@@ -200,9 +200,9 @@ https://deliber.at/roam-alfred/</string>
 		<key>798C6EF5-C578-466A-B323-3124FCB3EE82</key>
 		<dict>
 			<key>xpos</key>
-			<integer>805</integer>
+			<integer>820</integer>
 			<key>ypos</key>
-			<integer>60</integer>
+			<integer>70</integer>
 		</dict>
 		<key>D8176F49-8CF3-4813-9CF6-6B488F0A5166</key>
 		<dict>
@@ -215,7 +215,7 @@ https://deliber.at/roam-alfred/</string>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>1.1</string>
+	<string>2.0</string>
 	<key>webaddress</key>
 	<string>https://deliber.at/roam-alfred/</string>
 </dict>

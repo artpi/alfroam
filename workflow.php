@@ -25,11 +25,20 @@ class Roam {
 	}
 
 	function load_backup() {
+		$cache_location = '/Users/artpi/Desktop/roam.json';
+		if( file_exists( $cache_location ) && time() - filemtime( $cache_location ) < 2 * 3600 ) {
+			$cache = json_decode( file_get_contents( $cache_location ), true );
+			$this->uid_indexed = $cache['uid_indexed'];
+			$this->page_indexed = $cache['page_indexed'];
+			$this->page_indexed = $cache['id_indexed'];
+			$this->graph = $cache['graph'];
+			return true;
+		}
 		$b = $this->get_fresh_backup();
 		if ( ! $b ) {
 			return false;
 		}
-		preg_match_all( '#\[([0-9]+) :(block/string|block/parents|edit/time|block/children|block/uid|node/title|block/order) "?(.*?)"? ([0-9]+)\]#is', file_get_contents( $this->file ), $matches );
+		preg_match_all( '#\[([0-9]+) :(block/string|block/parents|block/refs|edit/time|block/children|block/uid|node/title|block/order) "?(.*?)"? ([0-9]+)\]#is', file_get_contents( $this->file ), $matches );
 
 		for ( $i = 0; $i < count( $matches[0] ); $i++ ) {
 			$id = $matches[1][$i];
@@ -38,22 +47,33 @@ class Roam {
 					'id' => $id,
 					'block/parents' => array(),
 					'block/children' => array(),
+					'block/refs' => array(),
 				);
 			}
 
-			if ( in_array( $matches[2][ $i ], [ 'block/parents', 'block/children' ] ) ) {
+			if ( in_array( $matches[2][ $i ], [ 'block/parents', 'block/children', 'block/refs' ] ) ) {
 				$this->id_indexed[ $id ][ $matches[2][ $i ] ][] = $matches[3][ $i ];
+				// if( $matches[2][ $i ] === 'block/refs') {
+				// 	print_r( $this->id_indexed[ $id ] );
+				// }
 			} else {
 				$this->id_indexed[ $id ][ $matches[2][ $i ] ] = $matches[3][ $i ];
 			}
 
 			if ( $matches[2][ $i ] === 'block/uid' ) {
-				$this->uid_indexed[ $matches[3][ $i ] ] = $this->id_indexed[ $id ];
+				$this->uid_indexed[ $matches[3][ $i ] ] = &$this->id_indexed[ $id ];
 			}
 			if ( $matches[2][ $i ] === 'node/title' ) {
-				$this->page_indexed[ $matches[3][ $i ] ] = $this->id_indexed[ $id ];
+				$this->page_indexed[ $matches[3][ $i ] ] = &$this->id_indexed[ $id ];
 			}
 		}
+		$cache = array(
+			'id_indexed' => $this->id_indexed,
+			'uid_indexed' => $this->uid_indexed,
+			'page_indexed' => $this->page_indexed,
+			'graph' => $this->graph,
+		);
+		file_put_contents( $cache_location, json_encode( $cache ) );
 		return count( $this->uid_indexed );
 	}
 
@@ -73,6 +93,7 @@ class Roam {
 				'arg' => 'https://deliber.at/roam-alfred/',
 			);
 		} else if ( empty( $this->config['location'] ) || ! $this->load_backup() ) {
+			//TODO this can be automated from ~/Library/Application Support/Roam Research/backups
 			$this->output[] = array(
 				'title' => 'Cannot read your database. ',
 				'subtitle' => 'Point me to your graph .json file. ex: "roam /Users/me/Desktop/roam"',
@@ -84,10 +105,25 @@ class Roam {
 		echo json_encode( array( 'items' => $this->output ) );
 	}
 
+	public function sort_by_updated( $item1, $item2 ) {
+		if( empty( $item1['edit/time'] ) && empty( $item2['edit/time'] ) ) {
+			echo "empty";
+			return 0;
+		} else if ( empty( $item1['edit/time'] ) || $item2['edit/time'] > $item1['edit/time'] ) {
+			return -1;
+		} else if ( empty( $item2['edit/time'] ) || $item1['edit/time'] > $item2['edit/time'] ) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
 	function s( $search ) {
 		$this->search = $search;
 		if ( ! $this->search ) {
-			$this->output = array_map( function( $item ) { return $this->output( $item ); }, array_values( $this->page_indexed ) );
+			$output = array_map( function( $item ) { return $this->output( $item ); }, array_values( $this->page_indexed ) );
+			usort( $output, [ $this, 'sort_by_updated'] );
+			$this->output = $output;
 		} else if( preg_match( "#^\[\[([^\]]+)\]\] ?(.*?)$#i", $this->search, $match ) ) {
 			if ( isset( $this->page_indexed[ $match[1] ] ) ) {
 				$this->output[] = $this->output( $this->page_indexed[ $match[1] ] );
@@ -134,11 +170,19 @@ class Roam {
 					function( $item ) {
 						return $this->output( $item );
 					},
-					array_filter(
-						array_values( $this->id_indexed ),
-						function( $item ) use ( $search ) {
-							return ! empty( $item['block/string'] ) && stristr( $item['block/string'], $search );
-						}
+					array_merge(
+						array_filter(
+							array_values( $this->page_indexed ),
+							function( $item ) use ( $search ) {
+								return stristr( strtolower( $item['node/title'] ), strtolower( $search ) );
+							}
+						),
+						array_filter(
+							array_values( $this->id_indexed ),
+							function( $item ) use ( $search ) {
+								return ! empty( $item['block/string'] ) && stristr( $item['block/string'], $search );
+							}
+						)
 					)
 				)
 			);
@@ -190,3 +234,6 @@ class Roam {
 		return $out;
 	}
 }
+// $r = new Roam();
+// $r->search('((dXcpkPrhz))');
+// print_r( $r->id_indexed['11000'] );
